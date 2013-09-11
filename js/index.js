@@ -1,6 +1,7 @@
 var raytracer = require('./raytracer')
   , $ = require('jquery-browserify')
   , primitives = require('./primitives')
+  , cam = require('./lights-camera-action')
 
 console.log(raytracer)
 var rays = raytracer
@@ -13,16 +14,9 @@ rays.max_depth = 3;
 rays.antialias = 4;//Num samples
 
 rays.scene = {}
-rays.scene.objects = [
-  new primitives.CheckerYPlane(0.0, [0x33,0x33,0x33], [0xdd,0xdd,0xdd])
-/*
-	new rays.Sphere([7, 5, 5], 5.0, [0xff,0,0], 20,  0.2)
-,	new rays.Sphere([0,5,12], 5, [0,0,0xff], 20, 0.2)
-, new rays.Sphere([-7 , 5, 5], 5.0, [0x00,0xff,0x00], 30, 0.2)
-*/
 
 
-	];
+rays.scene.objects = [new primitives.CheckerYPlane(0.0, [0x33,0x33,0x33], [0xdd,0xdd,0xdd])];
 
 for (var x = -3; x < 3; x++){
   for (var z = 0; z < 4; z++){
@@ -37,7 +31,7 @@ rays.scene.lights = [
 /*	 [[x,y,z], intensity(0-1), color] */
 	[[-300,300,0], 0.6, [0xff, 0xff, 0xff]]
 ]
-rays.scene.camera = new rays.Camera([0.0,10.0,-50.0], [0.0,5.0,0.0], Math.PI/4, 5, 4);
+rays.scene.camera = new cam.Camera([0.0,10.0,-50.0], [0.0,5.0,0.0], Math.PI/4, 5, 4);
 
 
 /** Onload setup the canvas and do shizzle **/
