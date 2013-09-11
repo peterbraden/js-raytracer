@@ -1,5 +1,6 @@
 var raytracer = require('./raytracer')
   , $ = require('jquery-browserify')
+  , primitives = require('./primitives')
 
 console.log(raytracer)
 var rays = raytracer
@@ -13,7 +14,7 @@ rays.antialias = 4;//Num samples
 
 rays.scene = {}
 rays.scene.objects = [
-  new rays.CheckerYPlane(0.0, [0x33,0x33,0x33], [0xdd,0xdd,0xdd])
+  new primitives.CheckerYPlane(0.0, [0x33,0x33,0x33], [0xdd,0xdd,0xdd])
 /*
 	new rays.Sphere([7, 5, 5], 5.0, [0xff,0,0], 20,  0.2)
 ,	new rays.Sphere([0,5,12], 5, [0,0,0xff], 20, 0.2)
@@ -26,7 +27,7 @@ rays.scene.objects = [
 for (var x = -3; x < 3; x++){
   for (var z = 0; z < 4; z++){
     rays.scene.objects.push(
-      new rays.Sphere(
+      new primitives.Sphere(
         [x * 8 + (x%2), 2 + z*3 + Math.abs(x), z*8], 3, [0xff,0xff,0xff], 10, 0.7))
   }
 }
