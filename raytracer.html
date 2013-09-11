@@ -32,28 +32,33 @@ This only works in a modern browser that supports the &lt;canvas&gt; element. Fo
 rays.eye = [0,0,0];
 rays.cam_dist = 200; /* Cam plane is x,y,cam_dist */
 rays.ambient = 0.1;
-rays.max_depth = 1;
+rays.max_depth = 3;
 rays.antialias = 4;//Num samples
 
 rays.scene = {}
 rays.scene.objects = [
-
+  new rays.CheckerYPlane(0.0, [0x33,0x33,0x33], [0xdd,0xdd,0xdd])
+/*
 	new rays.Sphere([7, 5, 5], 5.0, [0xff,0,0], 20,  0.2)
 ,	new rays.Sphere([0,5,12], 5, [0,0,0xff], 20, 0.2)
 , new rays.Sphere([-7 , 5, 5], 5.0, [0x00,0xff,0x00], 30, 0.2)
+*/
 
-, new rays.Sphere([-10 , 2, 0], 2.0, [0xff,0xff,0xff], 30, 0.5)
-, new rays.Sphere([10 , 2, 0], 2.0, [0xff,0xff,0xff], 30, 0.5)
-
-, new rays.SkyDome()
-
-, new rays.CheckerYPlane(0.0, [0x33,0x33,0x33], [0xdd,0xdd,0xdd])
 
 	];
+
+for (var x = -3; x < 3; x++){
+  for (var z = 0; z < 4; z++){
+    rays.scene.objects.push(
+      new rays.Sphere(
+        [x * 8 + (x%2), 2 + z*3 + Math.abs(x), z*8], 3, [0xff,0xff,0xff], 10, 0.7))
+  }
+}
+
+rays.scene.sky = [0xe, 0xe, 0xff]
 rays.scene.lights = [
 /*	 [[x,y,z], intensity(0-1), color] */
 	[[-300,300,0], 0.6, [0xff, 0xff, 0xff]]
-,	[[300,300,0], 0.2, [0xff, 0xff, 0 ]]
 ]
 rays.scene.camera = new rays.Camera([0.0,10.0,-50.0], [0.0,5.0,0.0], Math.PI/4, 5, 4);
 
@@ -71,7 +76,6 @@ $(function(){
   rays.height = screen.height
 
   rays.renderLine = function(y){
-  console.log("RENDER ", y)
     //ctx.putImageData(rays.imdat, 0, 0, 0, y, rays.width, 1)
     ctx.putImageData(rays.imdat, 0, 0)
   }

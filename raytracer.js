@@ -27,17 +27,6 @@ rays.Sphere = function(pos, radius, color, phong, reflection){
 
 };
 
-
-rays.SkyDome = function(){
-  this.intersects = function(){
-    return 999
-  }
-  this.color = function(){return [0x9, 0x9, 0xff]}
-  this.normal = function(pt){
-    return plib.v3.normalise(plib.v3.sub(pt, [0,0,0]));
-  }
-}
-
 rays.CheckerYPlane = function(y, col1, col2){
 	this.y = y;
 	this.col1 = col1;
@@ -122,13 +111,14 @@ rays.intersection = function(ro, rd, max, min){
 	var nearest = null;
 	var nearest_dist = max;
 	
-	$.each(rays.scene.objects, function(){
-		var d = this.intersects(ro, rd);
+	var objs = rays.scene.objects
+  for (var i = 0, ii = objs.length; i<ii; i++){
+		var d = objs[i].intersects(ro, rd);
 		if(d && d < nearest_dist && d > min){
 			nearest_dist = d;
-			nearest = this;
+			nearest = objs[i];
 		}
-	});
+  }
 
 	return [nearest_dist, nearest];
 }
@@ -189,7 +179,7 @@ rays.trace = function(ro, rd, depth){
 	}
 	else{
 		/* No intersection, background color */
-		return [0,0,0];
+		return rays.scene.sky || [0,0,0];
 	}
 }
 
@@ -317,7 +307,7 @@ rays.antialiasgrid = [[0.2, 0.2], [0.2, 0.8], [0.8, 0.2], [0.8, 0.8]];
 rays.start = function(orx, ory, wid, heig){
   for (var y = ory; y < heig; y++){
     setImmediate(function(y){
-      console.log("Rendering Line", y)
+      if (y%10==0) console.log("Rendering Line", y)
     
       for (var x = orx; x < wid; x++){
         var tot = [0,0,0]
