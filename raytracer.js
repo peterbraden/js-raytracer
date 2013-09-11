@@ -27,6 +27,17 @@ rays.Sphere = function(pos, radius, color, phong, reflection){
 
 };
 
+
+rays.SkyDome = function(){
+  this.intersects = function(){
+    return 999
+  }
+  this.color = function(){return [0x9, 0x9, 0xff]}
+  this.normal = function(pt){
+    return plib.v3.normalise(plib.v3.sub(pt, [0,0,0]));
+  }
+}
+
 rays.CheckerYPlane = function(y, col1, col2){
 	this.y = y;
 	this.col1 = col1;
@@ -131,7 +142,7 @@ rays.trace = function(ro, rd, depth){
 	var i = rays.intersection(ro,rd, 1.0E100000);
 	var nearest = i[1];
 	var dist = i[0];	
-	
+
 	if (nearest){
 		var intersection_point = plib.v3.add(ro, plib.v3.scale(plib.v3.normalise(rd), dist));
 		var normal = nearest.normal(intersection_point);
@@ -195,6 +206,8 @@ rays.getRay = function(x,y, width, height){
 * Args is [ymin, ymax, xmin, xmax, screenwidth, screenheight]
 */
 rays.map = function(args, callback){
+
+ /* 
 	var x = args[2];
 	var y = args[0];
 	var busy = false;
@@ -214,6 +227,7 @@ rays.map = function(args, callback){
 				busy = false;
 				kill_iter = true;
 			}
+
 			if (rays.antialias){
 				var tot = [0.0,0.0,0.0];
 				
@@ -242,7 +256,17 @@ rays.map = function(args, callback){
 			busy = false;
 		}		
 	},0);
+
+  */
 }
+
+var traceRay = function(x, y, cb){
+	var ray = rays.scene.camera.getRay(x,y)
+    , pixel = rays.trace(ray[0], ray[1])
+	  , res = rays.pixelToInt(pixel)
+  cb(pixel)
+}
+
 
 
 /**
@@ -288,61 +312,40 @@ rays.renderImage = function(screen, ctx){
 
 
 
-localProcess = function(data){
-	var run = function(ind){
-		if (ind >= data.length){
-			return
-		}
-		console.log("Rendering Line", ind);
-		rays.map(data[ind], function(args, res){
-			rays.handleResult([{'args' : args, 'res' : res}], function(){
-				run(++ind);
-			});
-		});
-	}
-	
-	run(0);
+rays.antialiasgrid = [[0.2, 0.2], [0.2, 0.8], [0.8, 0.2], [0.8, 0.8]];
+
+rays.start = function(orx, ory, wid, heig){
+  for (var y = ory; y < heig; y++){
+    setImmediate(function(y){
+      console.log("Rendering Line", y)
+    
+      for (var x = orx; x < wid; x++){
+        var tot = [0,0,0]
+        for (var aa = 0; aa<rays.antialiasgrid.length; aa++){
+          traceRay(
+              (x + rays.antialiasgrid[aa][0]) / wid
+            , (y + rays.antialiasgrid[aa][1]) / heig, 
+            function(pix){
+              tot = plib.v3.add(tot, pix);
+            })  
+        }
+        var pix = plib.v3.scale(tot, 1/4)
+        rays.handlePixel(x, y, pix[0], pix[1], pix[2])
+      }
+      rays.renderLine(y)
+    }, y)
+  }
 }
 
-/* Render the result */
-rays.handleResult = function(rows, callback){
-	var scrn = $("#rays")[0]
-	  , ctx = scrn.getContext('2d')
-    , imdat = ctx.getImageData(0, 0, scrn.width, scrn.height)
 
-	$.each(rows, function(){
-		args = this['args'];
-		data = this['res'];
-		var y = args[0];
-		//if ($.inArray(y, rays.rendered) < 0){
-		//	rays.rendered.push(y);
-		var x = args[2]
-		for(var i = 0; y<args[1]; i++){
-		
-      var pos = ((scrn.height - y) * scrn.width + x) * 4 
-
-      imdat.data[pos] = data[i] % 256 // R
-      imdat.data[pos + 1] = (data[i]>>8) % 256 // G
-      imdat.data[pos + 2] = (data[i]>>16) % 256 // B
-			
-			if (x >= args[3]){
-				y ++;
-				x = args[2];
-			} else{
-				x++;
-			}
-		}
-		//}	
-
-    ctx.putImageData(imdat, 0, 0);
-	});
-
-
-	if (callback){
-		return callback();
-	}	
+rays.handlePixel = function(x, y, r, g, b){
+  var pos = ((rays.height - y) * rays.width + x) * 4 
+  rays.imdat.data[pos]     = r
+  rays.imdat.data[pos + 1] = g
+  rays.imdat.data[pos + 2] = b
 }
-//rays.rendered = [];
+
+
 
 
 
