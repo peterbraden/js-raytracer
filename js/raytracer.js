@@ -1,4 +1,8 @@
-var rays = {};
+var plib = require('./plib.js')
+
+require('setimmediate')
+
+module.exports = rays = {};
 
 
 /** Primitives **/
@@ -306,6 +310,7 @@ rays.antialiasgrid = [[0.2, 0.2], [0.2, 0.8], [0.8, 0.2], [0.8, 0.8]];
 
 rays.start = function(orx, ory, wid, heig){
   for (var y = ory; y < heig; y++){
+    console.log("!!", setImmediate)
     setImmediate(function(y){
       if (y%10==0) console.log("Rendering Line", y)
     

@@ -1,8 +1,5 @@
+var plib = module.exports =  {};
 
-var exports = exports || {}, //use common js module system
-	plib = plib || {};
-
-exports.plib = plib
 
 plib = function(plib){
 	/*****************************************************************************
